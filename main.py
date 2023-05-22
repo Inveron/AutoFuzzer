@@ -57,11 +57,11 @@ def gobusterScan():
         urls.append(str(url))
     
     
-    print("Urls found: \n")
+    print("Urls found: ")
     for i in urls:
         print(i + "\n")
 
-
+print("TCP ports found: \n" + allPorts() + "\n")
 
 #runs tests and filters outputs
 if nmapscan() == True:
