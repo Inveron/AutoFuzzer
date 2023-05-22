@@ -1,22 +1,27 @@
 import os
 import subprocess
 import re
-
+import requests
+from bs4 import BeautifulSoup
 #Part 1
 
 print("===========================AUTO FUZZER===========================")
 ip = str(input("What IP should the script target? "))
 print("=================================================================")
+
 #Runs the nmap and gobuster scans
 print("\nScanning with nmap to find open ports....")
 nmap = subprocess.run("nmap -A " + ip, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 print("Nmap scan done! \n")
 
 print("Scanning gobuster to find directories....")
-gobust = subprocess.run("gobuster -e -u http://" + ip + "/ -w /usr/share/wordlists/dirbuster-ng/wordlists/common.txt", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+gobust = subprocess.run("gobuster -e -u http://" + ip + " -w /usr/share/wordlists/dirbuster-ng/wordlists/common.txt", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 print("Gobuster scan done! \n")
-print("=================================================================\n\n")
+print("=================================================================\n")
+
 urls = []
+filteredurls = []
+
 #returns only http ports
 def nmapscan():
     filterpattern = r"\d+\/tcp\s+open\s+http"
@@ -39,6 +44,9 @@ def allPorts():
 
 #Part 2 
 def gobusterScan():
+    #makes sure the url list includes the base url as well
+    urls.append('http://' + ip + '/index.html')
+
     filterpattern = r'(http://\S+)\s\(Status: (\d+)\)'
     matches = re.findall(filterpattern, str(gobust))
     
@@ -47,8 +55,13 @@ def gobusterScan():
         url, status = match
 
         urls.append(str(url))
-        
-    print (urls)
+    
+    
+    print("Urls found: \n")
+    for i in urls:
+        print(i + "\n")
+
+
 
 #runs tests and filters outputs
 if nmapscan() == True:
@@ -57,8 +70,34 @@ if nmapscan() == True:
 else:
     allPorts()
 
-#Part 3
+#Part 3 - Web Scraping
 
 
 
-# for /f %i in (urls.txt) do curl %i | grep -i -E "input .*?(email|name)" >> filtered_urls.txt
+for i in urls:
+    response = requests.get(i)
+
+    soup = BeautifulSoup(response.content, 'html.parser')
+    #searches for any and all input fields
+    inputs = soup.find_all('input')
+    
+    totalinputs = 0
+    fileinputs = 0
+    for input in inputs:
+        field_name = input.get('name')
+        field_value = input.get('value')
+        field_type = input.get('type')
+        
+        totalinputs += 1
+
+        if field_type == "file":
+            fileinputs += 1
+    #prints out results per ip
+    print("=================================================================\n")
+
+    print("Scrape results for " + i)
+    print("\nTotal inputs found = " + str(totalinputs))
+    print("\nFile upload inputs found: " + str(fileinputs) + "\n")
+
+        
+    

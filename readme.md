@@ -30,3 +30,4 @@ the terminal or a text file and will list the following:
         and didnt get detected and scraped. 
 
 
+note: this script requires that gobuster and nmap are installed on your system. 
