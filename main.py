@@ -42,10 +42,10 @@ def allPorts():
     return sanitized_output
 
 
-#Part 2 
+#Filters the gobuster scan and passes every directory found to urls
 def gobusterScan():
     #makes sure the url list includes the base url as well
-    urls.append('http://' + ip + '/index.html')
+    urls.append('http://' + ip + '/')
 
     filterpattern = r'(http://\S+)\s\(Status: (\d+)\)'
     matches = re.findall(filterpattern, str(gobust))
@@ -69,10 +69,15 @@ if nmapscan() == True:
 
 else:
     allPorts()
+    cont = input("No usable ports were found. Do you want to continue?(y/n): ")
+
+    if cont == "y":
+        pass
+    else:
+        print("Goodbye")
+        exit()
 
 #Part 3 - Web Scraping
-
-
 
 for i in urls:
     response = requests.get(i)
@@ -94,7 +99,6 @@ for i in urls:
             fileinputs += 1
     #prints out results per ip
     print("=================================================================\n")
-
     print("Scrape results for " + i)
     print("\nTotal inputs found = " + str(totalinputs))
     print("\nFile upload inputs found: " + str(fileinputs) + "\n")
